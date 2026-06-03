@@ -224,7 +224,7 @@ with tab3:
         return ""
 
     st.dataframe(
-        eng_df.style.applymap(highlight_diff, subset=["Difference"]),
+        eng_df.style.map(highlight_diff, subset=["Difference"]),
         use_container_width=True,
         hide_index=True
     )
