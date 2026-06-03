@@ -52,44 +52,54 @@ with st.sidebar:
     opening_rob_lsfo = st.number_input("Opening LSFO ROB (MT)", value=970.68, step=1.0)
     opening_rob_mgo  = st.number_input("Opening MGO ROB (MT)",  value=242.98, step=1.0)
 
-    generate = st.button("Generate Report", type="primary", use_container_width=True)
-
 # Main Area
 if not uploaded_file:
     st.info("Please upload a Noon Report Excel file from the sidebar to get started.")
     st.stop()
 
-# Process on button click
-if generate or "df_result" not in st.session_state:
-    if uploaded_file:
-        with st.spinner("Analyzing data..."):
-            # Save uploaded file temporarily
-            import tempfile, os
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx") as tmp:
-                tmp.write(uploaded_file.read())
-                tmp_path = tmp.name
+# Process automatically when file is uploaded or inputs change
+@st.cache_data(show_spinner=False)
+def process_uploaded_file(file_bytes, cp_params):
+    import tempfile, os
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx") as tmp:
+        tmp.write(file_bytes)
+        tmp_path = tmp.name
 
-            df_raw = parse_noon_report(tmp_path)
-            info   = get_vessel_info(tmp_path)
-            os.unlink(tmp_path)
+    try:
+        df_raw = parse_noon_report(tmp_path)
+        info   = get_vessel_info(tmp_path)
+    finally:
+        os.unlink(tmp_path)
 
-            cp = {
-                "vessel_name":      vessel_name or info.get("vessel_name", "Unknown"),
-                "voyage_from":      voyage_from,
-                "voyage_to":        voyage_to,
-                "cp_speed":         cp_speed,
-                "cp_lsfo_steam":    cp_lsfo_steam,
-                "cp_lsfo_idle":     cp_lsfo_idle,
-                "opening_rob_lsfo": opening_rob_lsfo,
-                "opening_rob_mgo":  opening_rob_mgo,
-            }
+    # Use vessel name from file if not provided
+    if not cp_params.get("vessel_name"):
+        cp_params["vessel_name"] = info.get("vessel_name", "Unknown")
 
-            st.session_state.df_result = calculate_performance(df_raw, cp)
-            st.session_state.summary   = get_summary(st.session_state.df_result, cp)
+    df_result = calculate_performance(df_raw, cp_params)
+    summary = get_summary(df_result, cp_params)
+    return df_result, summary
 
-# Retrieve data from session state
-df   = st.session_state.df_result
-summ = st.session_state.summary
+if not uploaded_file:
+    st.info("Please upload a Noon Report Excel file from the sidebar to get started.")
+    st.stop()
+
+with st.spinner("Analyzing data..."):
+    # Read file bytes once
+    file_bytes = uploaded_file.getvalue()
+    
+    cp = {
+        "vessel_name":      vessel_name,
+        "voyage_from":      voyage_from,
+        "voyage_to":        voyage_to,
+        "cp_speed":         cp_speed,
+        "cp_lsfo_steam":    cp_lsfo_steam,
+        "cp_lsfo_idle":     cp_lsfo_idle,
+        "opening_rob_lsfo": opening_rob_lsfo,
+        "opening_rob_mgo":  opening_rob_mgo,
+    }
+
+    df, summ = process_uploaded_file(file_bytes, cp)
+
 
 # Layout: Tabs for better User Experience
 tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
