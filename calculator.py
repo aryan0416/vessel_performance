@@ -65,8 +65,15 @@ def calculate_performance(df: pd.DataFrame, cp: dict) -> pd.DataFrame:
     computed_rob_mgo  = []
 
     for _, row in df.iterrows():
-        rob_lsfo = rob_lsfo + row["lsfo_received"] - row["total_lsfo"]
-        rob_mgo  = rob_mgo  + row["mgo_received"]  - row["total_mgo"]
+        lsfo_recv = row.get("lsfo_received", 0.0)
+        mgo_recv  = row.get("mgo_received", 0.0)
+        
+        # Handle NaN values explicitly
+        if pd.isna(lsfo_recv): lsfo_recv = 0.0
+        if pd.isna(mgo_recv):  mgo_recv = 0.0
+        
+        rob_lsfo = rob_lsfo + lsfo_recv - row.get("total_lsfo", 0.0)
+        rob_mgo  = rob_mgo  + mgo_recv  - row.get("total_mgo", 0.0)
         computed_rob_lsfo.append(round(rob_lsfo, 3))
         computed_rob_mgo.append(round(rob_mgo, 3))
 
