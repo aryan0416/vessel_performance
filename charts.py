@@ -378,15 +378,15 @@ def chart_map_folium(df: pd.DataFrame):
     png_path = os.path.abspath("temp_map.png")
     m.save(html_path)
 
-    options = webdriver.EdgeOptions()
-    options.add_argument('--headless')
-    options.add_argument('--disable-gpu')
-    options.add_argument('--window-size=1200,500')
-
     try:
         from selenium import webdriver
         from webdriver_manager.microsoft import EdgeChromiumDriverManager
         from selenium.webdriver.edge.service import Service
+        
+        options = webdriver.EdgeOptions()
+        options.add_argument('--headless')
+        options.add_argument('--disable-gpu')
+        options.add_argument('--window-size=1200,500')
         
         service = Service(EdgeChromiumDriverManager().install())
         driver = webdriver.Edge(service=service, options=options)
