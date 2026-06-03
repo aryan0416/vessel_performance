@@ -20,9 +20,9 @@ def get_vessel_info(filepath):
         for sheet in xl.sheet_names:
             df_meta = xl.parse(sheet, header=None, nrows=20)
             for _, row in df_meta.iterrows():
-                row_strs = row.astype(str).str.lower()
-                for col_idx, cell_val in enumerate(row_strs):
-                    if "vessel" in cell_val or "m/v" in cell_val:
+                for col_idx, cell_val in enumerate(row):
+                    cell_str = str(cell_val).lower()
+                    if "vessel" in cell_str or "m/v" in cell_str:
                         if col_idx + 1 < len(row):
                             potential_name = str(row.iloc[col_idx + 1]).strip()
                             if potential_name and potential_name != "nan":
