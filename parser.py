@@ -47,7 +47,7 @@ def parse_noon_report(filepath):
                     raw_headers = df_raw.iloc[:, c].astype(str).str.strip().str.lower()
                     headers = []
                     for h in raw_headers:
-                        h = h.replace(' ', '_').replace('\n', '')
+                        h = str(h).replace(' ', '_').replace('\n', '')
                         h = h.replace('(mt)', '').replace('_(mt)', '').replace('(%)', 'pct')
                         h = h.strip('_')
                         headers.append(h)
