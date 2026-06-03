@@ -317,9 +317,6 @@ import folium
 import os
 import time
 import re
-from selenium import webdriver
-from webdriver_manager.microsoft import EdgeChromiumDriverManager
-from selenium.webdriver.edge.service import Service
 
 def _parse_coord(val):
     if pd.isna(val) or val is None: return None
@@ -387,6 +384,10 @@ def chart_map_folium(df: pd.DataFrame):
     options.add_argument('--window-size=1200,500')
 
     try:
+        from selenium import webdriver
+        from webdriver_manager.microsoft import EdgeChromiumDriverManager
+        from selenium.webdriver.edge.service import Service
+        
         service = Service(EdgeChromiumDriverManager().install())
         driver = webdriver.Edge(service=service, options=options)
         driver.get(f"file:///{html_path}")
